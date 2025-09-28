@@ -218,6 +218,150 @@ python gridworld.py -g DiscountGrid -a value -r 0.5
 </p>
 
 
+<br><br>
+<br><br>
+<br><br>
+
+# Partie 2 :
+<br><br>
+## **Question 5: Expliquer dans le rapport les différences entre le résultat obtenu avec epsilon à 0.1 et à 0.9.**
+<br><br>
+
+### Pour epsilon = 0,1
+
+**commande utilisé : python gridworld.py -a q -k 100 --noise 0.0 -e 0.1 -q**
+
+1. D'après le cours, epsilon contrôle l'exploration de l'agent :
+
+- **epsilon** : désigne la probabilité d'action aléatoire
+
+- **1 - epsilon** : désigne la probabilité d'action Greedy
+
+2. Analyse de notre cas : (epsilon = 0,1)
+
+- Pour la valeur 0,1 de epsilon. Puisque (1 - epsilon = 0,9) donc on a 90% que l'agent prend l'action greedy (prend l'action jugée meilleure par les Q actuelle). Ainsi, On a une probabilité de 10% que l'agent prend une action aléatoire. Ce qui explique le résultats où l'agent suit le chemin optimale.
+
+<img width="1342" height="1190" alt="image" src="https://github.com/user-attachments/assets/7793fb70-252b-4eb3-b488-6139e90baea5" />
+
+
+#### Contraintes :
+  Pour un epsilon proche de zero, on a un risque fort que l'agent reste coincé sur une stratégie sous-optimale.
+
+  Exemple :
+  . Dans l'état de départ, il existe deux actions A et B.
+  . Action A mène à un chemin court avec récompense moyenne +1.
+  . Action B mène (plus loin) à un chemin meilleur donnant +10.
+  . Si par hasard, au départ, l'agent a vu A une fois et obtenu +1, et n'a jamais , testé B, alors Q(A)=1, Q(B)=0.
+
+Avec ε=0 il choisira toujours A → il ne testera jamais B → restera bloqué sur la solution sous-optimale.
+
+<img width="1339" height="1195" alt="image" src="https://github.com/user-attachments/assets/9eb47ffa-a5c4-439a-b36b-9efa8092a6e6" />
+
+<br><br>
+### Pour epsilon = 0,9
+
+**commande utilisé : python gridworld.py -a q -k 100 --noise 0.0 -e 0.9 -q**
+
+1. D'après le cours, epsilon contrôle l'exploration de l'agent :
+  . epsilon : désigne la probabilité d'action aléatoire
+  . 1 - epsilon : désigne la probabilité d'action Greedy
+
+2. Analyse de notre cas : (epsilon = 0,9)
+  Pour la valeur 0,9 de epsilon, On a une probabilité de 90% que l'agent prend une action aléatoire, indépendamment de Q. Puisque (1 - epsilon = 0,1) donc on a 10% que l'agent prend l'action jugée meilleure par les Q actuels (prend l'action jugée meilleure par les Q actuelle). D'où le résultats où l'agent explore tous les cases.
+
+<img width="1344" height="1194" alt="image" src="https://github.com/user-attachments/assets/72638630-8014-4e96-b744-009ec8ed54a7" />
+
+
+<br><br>
+## **Question 6: Expliquer dans le rapport la modélisation de cet environnement sous forme de MDP, en précisant S et A ainsi que la fonction de récompense R (regarder le fichier `crawler.py`). Quelle est la dimension de l'espace d'états ? Quel est le comportement attendu de l'agent s'il suit sa politique optimale ?**
+<br><br>
+### Modélisation du MDP Crawler
+
+L'environnement du robot crawler peut être modélisé comme un **Processus Décisionnel Markovien (MDP)** avec les composants suivants :
+<br><br>
+#### **1. Espace des États (S)**
+
+D'après le fichier `crawler.py`, l'espace des états est **discret et bidimensionnel** :
+- **S = (armBucket, handBucket)** où :
+- `armBucket` ∈ {0, 1, 2, ..., 8} (9 états possibles pour le bras)
+- `handBucket` ∈ {0, 1, 2, ..., 12} (13 états possibles pour la main)
+
+La **dimension de l'espace d'états** est donc : **|S| = 9 × 13 = 117 états**
+
+La discrétisation est effectuée par les buckets qui transforment les angles continus en indices discrets :
+
+```python
+self.nArmStates = 9
+self.nHandStates = 13
+```
+<br><br>
+#### **2. Espace des Actions (A)**
+
+L'espace des actions dépend de l'état courant et comprend **4 actions possibles** :
+- **"arm-up"** : lever le bras (si `armBucket < 8`)
+- **"arm-down"** : baisser le bras (si `armBucket > 0`)
+- **"hand-up"** : lever la main (si `handBucket < 12`)
+- **"hand-down"** : baisser la main (si `handBucket > 0`)
+
+Les actions disponibles à chaque état sont déterminées par la méthode `getPossibleActions(state)`.[1]
+<br><br>
+#### **3. Fonction de Récompense (R)**
+
+La fonction de récompense est **basée sur le déplacement horizontal** du robot :
+
+```python
+reward = newX - oldX
+```
+
+- **R(s,a) = déplacement horizontal** causé par l'action `a` depuis l'état `s`
+- **Récompense positive** : si le robot avance vers la droite
+- **Récompense négative** : si le robot recule vers la gauche
+- **Récompense nulle** : si aucun déplacement horizontal
+
+Cette récompense encourage le robot à **maximiser sa progression vers l'avant**.[1]
+<br><br>
+#### **4. Fonction de Transition (T)**
+
+Les transitions sont **déterministes** :
+- Chaque action modifie exactement un des deux buckets (bras ou main) de ±1
+- L'état suivant est calculé de manière déterministe selon l'action choisie
+- Le déplacement physique du robot est calculé par la méthode `displacement()` qui utilise la cinématique du robot.[1]
+<br><br>
+### Comportement Attendu de l'Agent Optimal
+
+Si l'agent suit sa **politique optimale π*** après apprentissage par Q-learning, le comportement attendu est :
+
+1. **Mouvement coordonné** : L'agent apprend à coordonner les mouvements du bras et de la main pour maximiser la progression
+2. **Séquence d'actions cyclique** : Développement d'un pattern répétitif optimal (ex: lever bras → lever main → baisser bras → baisser main)
+3. **Progression continue** : Le robot rampe vers l'avant de manière fluide et efficace
+4. **Évitement des actions non-productives** : L'agent évite les séquences qui font reculer ou stagner le robot
+<br><br>
+### Vérification de l'Apprentissage Optimal
+
+Pour vérifier que l'agent apprend bien le comportement optimal :
+
+1. **Observer la courbe d'apprentissage** : Les récompenses cumulées par épisode doivent augmenter progressivement
+2. **Analyser la politique convergée** : Après convergence, la politique doit montrer un pattern cyclique cohérent
+3. **Mesurer la vitesse moyenne** : Un agent optimal maintient une vitesse de progression positive et stable
+4. **Visualiser le mouvement** : Le robot doit ramper de manière fluide sans oscillations inutiles
+<br><br>
+### Paramètres Modifiables
+
+Via l'interface graphique, vous pouvez modifier :
+- **α (learning rate)** : Taux d'apprentissage pour les mises à jour Q-learning
+- **ε (epsilon)** : Probabilité d'exploration dans la stratégie ε-greedy
+- **γ (discount factor)** : Facteur d'actualisation pour les récompenses futures
+- **Nombre d'épisodes** : Durée d'entraînement de l'agent
+
+Ces paramètres influencent directement la **vitesse de convergence** et la **qualité de la politique apprise**.
+
+<br><br>
+## **Question 7: Expliquer les résultats obtenus et préciser dans le rapport les solutions que l'on peut mettre en place pour améliorer ces résultats.**
+<br><br>
+Les résultats obtenus avec le Q-learning tabulaire pour Pacman montrent une progression lente de l'agent, avec des performances acceptables uniquement sur les petits environnements "smallGrid". Cette limitation vient du fait que l'espace d'états de Pacman est très grand : la table Q ne peut contenir toutes les combinaisons possibles, ce qui empêche l'agent de converger vers une politique optimale sur des labyrinthes complexes.
+
+Pour améliorer les résultats, il est recommandé d'utiliser le Q-learning approximé avec des features pertinents (ex : SimpleExtractor ou ExpertExtractor). Cela permet une généralisation efficace des connaissances acquises sur des états similaires, et donc un apprentissage bien plus rapide et pérenne. L'ajustement minutieux des hyper-paramètres (epsilon, alpha, gamma) et l'utilisation de sessions d'entraînement plus longues contribuent aussi à de meilleurs résultats. Enfin, adapter la fonction de récompense (reward shaping) et enrichir les features pour capturer la complexité du jeu, constitue une approche efficace avant d'envisager des modèles d'apprentissage profond pour les environnements très complexes ou vastes.
+
 ## Question 8: Analyse des Features de l'ExpertExtractor
 
 ### Features Implémentées et leurs Rôles
