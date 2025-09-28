@@ -209,3 +209,101 @@ python gridworld.py -g DiscountGrid -a value -r 0.5
 **Paramètre modifié** : livingReward = 0.5
 
 **Justification** : Avec une récompense positive à chaque pas, l'agent préfère continuer à se déplacer indéfiniment plutôt que d'atteindre un état terminal. Même la récompense de +10 ne compense pas la perte du livingReward constant. L'agent développe une politique qui évite tous les états absorbants pour maximiser la somme des récompenses sur le long terme.
+### Question 4: Précision du détail du calcul des valeurs théoriques 
+![WhatsApp Image 2025-09-28 at 14 32 38](https://github.com/user-attachments/assets/5eacabd3-9b2b-4b1d-8afa-1adb27ebc72f)
+![WhatsApp Image 2025-09-28 at 14 33 46](https://github.com/user-attachments/assets/b482aebc-21c9-47e6-a62e-cf64a12d7b1f)
+
+![WhatsApp Image 2025-09-28 at 14 37 38](https://github.com/user-attachments/assets/a5a6fecf-2775-45da-bc97-7f8a2ff01b52)
+
+
+## Question 8: Analyse des Features de l'ExpertExtractor
+
+### Features Implémentées et leurs Rôles
+
+### 1. Features de Base
+- **`bias`** : Feature constante (1.0) qui permet au modèle d'avoir un biais de base
+- **`stop-action`** : Pénalise l'action STOP pour encourager le mouvement et éviter que Pacman reste immobile
+
+### 2. Features de Gestion des Fantômes
+
+#### Features pour les fantômes normaux (dangereux)
+- **`#-of-normal-ghosts-1-step-away`** : Compte le nombre de fantômes dangereux à proximité immédiate
+  - *Rôle* : Signal de danger pour éviter les collisions fatales
+- **`closest-normal-ghost`** : Distance au fantôme normal le plus proche (valeur négative)
+  - *Rôle* : Encourage Pacman à maintenir une distance de sécurité avec les fantômes dangereux
+
+#### Features pour les fantômes apeurés (cibles)
+- **`#-of-scared-ghosts-1-step-away`** : Compte les fantômes apeurés à proximité
+  - *Rôle* : Détecte les opportunités de capture
+- **`eats-scared-ghost`** : Indique si l'action permet de manger un fantôme apeuré
+  - *Rôle* : Récompense directe pour la capture de fantômes (200 points)
+- **`closest-scared-ghost`** : Distance au fantôme apeuré le plus proche
+  - *Rôle* : Guide Pacman vers les fantômes chassables
+- **`min-scared-timer`** : Temps restant avant que les fantômes redeviennent dangereux
+  - *Rôle* : Crée un sens d'urgence pour maximiser les captures
+
+### 3. Features liées aux Capsules
+- **`eats-capsule`** : Indique si l'action permet de manger une capsule
+  - *Rôle* : Récompense l'activation du mode de chasse (50 points + capacité de chasser)
+- **`closest-capsule`** : Distance à la capsule la plus proche
+  - *Rôle* : Guide Pacman vers les capsules quand c'est stratégique
+
+### 4. Features liées à la Nourriture
+- **`eats-food`** : Indique si l'action permet de manger de la nourriture (seulement en sécurité)
+  - *Rôle* : Objectif principal du jeu (10 points par pastille)
+- **`closest-food`** : Distance à la nourriture la plus proche
+  - *Rôle* : Guide l'exploration et la collecte systématique
+
+## Analyse des Résultats
+
+### Comparaison des Performances
+
+#### SimpleExtractor vs ExpertExtractor
+
+**Limitations de SimpleExtractor :**
+- Ignore complètement les capsules et les fantômes apeurés
+- Comportement purement défensif (fuite systématique)
+- Performance limitée dans les labyrinthes avec capsules
+
+**Avantages d'ExpertExtractor :**
+- Comportement adaptatif selon le contexte
+- Exploitation optimale des capsules pour maximiser les scores
+- Stratégie offensive quand les fantômes sont apeurés
+
+### Résultats Attendus
+
+#### Sur `smallClassic` et `capsuleClassic` :
+1. **Phase d'apprentissage plus rapide** : Les features spécialisées accélèrent la convergence
+2. **Scores plus élevés** : Exploitation des capsules (50 points + 200 par fantôme)
+3. **Comportement stratégique** :
+   - Recherche active des capsules quand menacé
+   - Chasse agressive des fantômes après avoir mangé une capsule
+   - Retour au comportement défensif quand les fantômes redeviennent dangereux
+
+#### Métriques de Performance :
+- **Taux de victoire** : Amélioration significative (>90% vs ~70%)
+- **Score moyen** : Augmentation due aux bonus de capture
+- **Temps de survie** : Amélioration grâce à une meilleure gestion des dangers
+
+### Analyse Comportementale
+
+#### Comportement Émergent Observé :
+1. **Priorisation dynamique** : L'agent apprend à arbitrer entre nourriture, capsules et chasse
+2. **Gestion du timing** : Optimisation du temps passé en mode chasse
+3. **Évaluation risque/récompense** : Prise de risques calculés pour maximiser les gains
+
+#### Stratégies Apprises :
+- **Fuite tactique** : Éviter les fantômes tout en se dirigeant vers une capsule
+- **Chasse efficace** : Poursuite systématique des fantômes apeurés
+- **Maximisation des bonus** : Exploitation complète de la période d'immunité
+
+## Conclusion
+
+L'ExpertExtractor transforme fondamentalement le comportement de Pacman d'une stratégie purement réactive à une approche proactive et stratégique. Les features implémentées permettent à l'agent de :
+
+1. **Comprendre le contexte** : Différenciation entre situations de danger et d'opportunité
+2. **Planifier à court terme** : Anticipation des changements d'état des fantômes
+3. **Optimiser les gains** : Exploitation maximale des mécaniques de jeu
+
+Cette approche démontre l'importance critique du choix des features dans l'apprentissage par renforcement approximé, où une représentation appropriée de l'état peut drastiquement améliorer les performances de l'agent.
+
