@@ -210,10 +210,12 @@ python gridworld.py -g DiscountGrid -a value -r 0.5
 
 **Justification** : Avec une récompense positive à chaque pas, l'agent préfère continuer à se déplacer indéfiniment plutôt que d'atteindre un état terminal. Même la récompense de +10 ne compense pas la perte du livingReward constant. L'agent développe une politique qui évite tous les états absorbants pour maximiser la somme des récompenses sur le long terme.
 ### Question 4: Précision du détail du calcul des valeurs théoriques 
-![WhatsApp Image 2025-09-28 at 14 32 38](https://github.com/user-attachments/assets/5eacabd3-9b2b-4b1d-8afa-1adb27ebc72f)
-![WhatsApp Image 2025-09-28 at 14 33 46](https://github.com/user-attachments/assets/b482aebc-21c9-47e6-a62e-cf64a12d7b1f)
 
-![WhatsApp Image 2025-09-28 at 14 37 38](https://github.com/user-attachments/assets/a5a6fecf-2775-45da-bc97-7f8a2ff01b52)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5eacabd3-9b2b-4b1d-8afa-1adb27ebc72f" alt="WhatsApp Image 2025-09-28 at 14 32 38" />
+  <img src="https://github.com/user-attachments/assets/b482aebc-21c9-47e6-a62e-cf64a12d7b1f" alt="WhatsApp Image 2025-09-28 at 14 33 46" />
+  <img src="https://github.com/user-attachments/assets/a5a6fecf-2775-45da-bc97-7f8a2ff01b52" alt="WhatsApp Image 2025-09-28 at 14 37 38" />
+</p>
 
 
 ## Question 8: Analyse des Features de l'ExpertExtractor
